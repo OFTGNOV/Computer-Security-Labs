@@ -1,9 +1,11 @@
 # Lab 1: Operation Digital Self-Defense — Building Your Personal Security Citadel
 
 ## 1. Overview & Context
+
 This lab explores the core cybersecurity mindset of **Defense in Depth** through the "Citadel" analogy. Rather than relying on a single defensive layer (such as basic antivirus), you construct a multi-layered fortress around your system, privacy, and sensitive data.
 
 ### The Scenario
+
 You are a journalist researching a sensitive topic. You need to inspect and download an application (`research_helper.exe`) from an untrusted website. To prevent potential malware from stealing research notes or compromising the host system, you deploy four layered defenses to safely isolate, test, and protect your environment.
 
 ---
@@ -11,21 +13,25 @@ You are a journalist researching a sensitive topic. You need to inspect and down
 ## 2. What We Need to Get Started
 
 ### System & Environment
+
 - **Host OS**: Windows 10 / 11
 - **Python**: Installed virtual environment (`.venv` in the repository root) using `.\.venv\Scripts\python.exe`
 
 ### Required Tools & Downloads
-| Defense Layer | Tool | Source / Official Link | Purpose |
-| :--- | :--- | :--- | :--- |
-| **Layer 1: The Moat** | **Sandboxie-Plus** | [Sandboxie-Plus GitHub](https://github.com/sandboxie-plus/Sandboxie) | Application process isolation & clean sandbox environment |
-| **Layer 2: The Sentries** | **Privacy Badger** | [EFF Privacy Badger](https://privacybadger.org) | Autonomous tracking and spyware blocker extension |
-| **Layer 3: The Gatekeeper** | **KeePass** | [KeePass Official](https://keepass.info) | Encrypted offline password vault (`.kdbx`) |
-| **Layer 4: The Keep** | **VeraCrypt** | [VeraCrypt Official](https://www.veracrypt.fr) | On-the-fly encrypted disk container (`.hc`) |
+
+| Defense Layer               | Tool               | Source / Official Link                                               | Purpose                                                   |
+|:--------------------------- |:------------------ |:-------------------------------------------------------------------- |:--------------------------------------------------------- |
+| **Layer 1: The Moat**       | **Sandboxie-Plus** | [Sandboxie-Plus GitHub](https://github.com/sandboxie-plus/Sandboxie) | Application process isolation & clean sandbox environment |
+| **Layer 2: The Sentries**   | **Privacy Badger** | [EFF Privacy Badger](https://privacybadger.org)                      | Autonomous tracking and spyware blocker extension         |
+| **Layer 3: The Gatekeeper** | **KeePass**        | [KeePass Official](https://keepass.info)                             | Encrypted offline password vault (`.kdbx`)                |
+| **Layer 4: The Keep**       | **VeraCrypt**      | [VeraCrypt Official](https://www.veracrypt.fr)                       | On-the-fly encrypted disk container (`.hc`)               |
 
 ---
 
 ## 3. Learning Objectives
+
 By the end of this lab, you will be able to:
+
 1. **Implement Defense in Depth**: Articulate and deploy independent, complementary defensive layers for personal endpoint security.
 2. **Execute Application Sandboxing**: Run untrusted binaries and browsers inside an isolated sandbox (`DefaultBox`) to block persistent system changes.
 3. **Manage Cryptographic Vaults**: Generate and store unique, complex credentials using KeePass with hardened key transformation rounds.
@@ -71,11 +77,13 @@ flowchart TD
 ### Phase 1: Fortifying the Foundation (Pre-Browsing Setup)
 
 #### Step 1: Deploy the Moat (Sandboxie-Plus)
+
 1. Download the latest installer from [Sandboxie-Plus GitHub Releases](https://github.com/sandboxie-plus/Sandboxie/releases).
 2. Run the installer accepting default options (restart Windows if prompted).
 3. Open Sandboxie-Plus and confirm that `DefaultBox` is present. This is your isolated execution room.
 
 #### Step 2: Forge Strong Keys (KeePass)
+
 1. Download the portable zip archive from [keepass.info](https://keepass.info/download.html).
 2. Extract the archive into a dedicated folder (e.g., `C:\Tools\KeePass`).
 3. Run `KeePass.exe`:
@@ -89,21 +97,24 @@ flowchart TD
 ### Phase 2: Reconnaissance Mission & Isolation Smoke Test
 
 #### Step 3: Conduct Safe Reconnaissance
+
 1. Right-click your web browser shortcut (Chrome, Firefox, Edge, etc.) and select **Run Sandboxed -> DefaultBox**.
 2. Notice the yellow outline/border around the window indicating it is running in an isolated container.
 3. In this sandboxed browser, navigate to [privacybadger.org](https://privacybadger.org) and install the extension.
 4. Browse to a major news website (e.g., CNN, Reuters, BBC). Open the Privacy Badger extension icon to inspect blocked third-party tracking cookies and domains.
 
 #### Step 4: The Isolation "Smoke Test"
+
 This step verifies that the sandbox confines file writes and destructive actions.
 
 1. **Create the Script**:
    Create `SandboxTest.py` on your host Desktop with the following script:
+   
    ```python
    import os
    from pathlib import Path
    import subprocess
-
+   
    def main():
        desktop_path = Path.home() / "Desktop" / "SandboxTestFile.txt"
        try:
@@ -113,7 +124,7 @@ This step verifies that the sandbox confines file writes and destructive actions
        except Exception as e:
            print(f"Error creating file: {e}")
        print()
-
+   
        print("Now attempting to clear the Recycle Bin...")
        try:
            subprocess.run(
@@ -126,16 +137,18 @@ This step verifies that the sandbox confines file writes and destructive actions
            print(f"An error occurred: {e}")
        print()
        input("Press Enter to exit...")
-
+   
    if __name__ == "__main__":
        main()
    ```
 
 2. **Execute Inside the Sandbox**:
+   
    - Right-click `SandboxTest.py` on your host Desktop and select **Run Sandboxed -> DefaultBox**.
    - Let the script finish and press Enter.
 
 3. **Verify the Proof**:
+   
    - **Inside Sandbox**: Open a sandboxed File Explorer window. You will see `SandboxTestFile.txt` on the Desktop and the Recycle Bin empty.
    - **On Host System (Reality)**: Check your physical Desktop. `SandboxTestFile.txt` does **not** exist. Check your real host Recycle Bin—none of its items were deleted.
 
@@ -144,6 +157,7 @@ This step verifies that the sandbox confines file writes and destructive actions
 ### Phase 3: Securing the Crown Jewels (Data Encryption)
 
 #### Step 5: Build the Inner Keep (VeraCrypt)
+
 1. Close all sandboxed windows. In the Windows system tray, right-click Sandboxie and click **Terminate All Programs**.
 2. Download and install VeraCrypt from [veracrypt.fr](https://www.veracrypt.fr).
 3. Open VeraCrypt and click **Create Volume**:
@@ -160,6 +174,7 @@ This step verifies that the sandbox confines file writes and destructive actions
 5. **Dismount**: Return to VeraCrypt and click **Dismount**.
 
 #### Step 6: Vault Management in KeePass
+
 1. Open KeePass on your host system.
 2. Click **Add Entry**:
    - **Title**: `My Secret VeraCrypt Vault`
@@ -169,6 +184,7 @@ This step verifies that the sandbox confines file writes and destructive actions
 ---
 
 ### Phase 4: After-Action Review & Cleanup
+
 1. In Sandboxie-Plus, right-click `DefaultBox` and select **Delete Contents** to permanently discard all isolated files and temporary state.
 2. (Optional) Remove `SandboxTest.py` from your Desktop.
 
@@ -177,11 +193,13 @@ This step verifies that the sandbox confines file writes and destructive actions
 ## 5. Lab Deliverables & Discussion Questions
 
 ### Required Deliverable
+
 - **Screenshot**: One single screenshot displaying:
   1. Your **KeePass** application window open showing the `My Secret VeraCrypt Vault` entry.
   2. The **VeraCrypt** main interface showing your `MySecretVault.hc` mounted as a virtual drive letter (e.g. `Z:`).
 
 ### Discussion Questions & Answers Reference
+
 1. **Isolation Report**:
    - *Question*: Describe the results of the `SandboxTest.py` script. What did you observe on the host system versus inside the sandbox?
    - *Key takeaway*: Sandboxing redirects file writes and OS modifications to an isolated virtual storage layer. The host OS remains pristine.
