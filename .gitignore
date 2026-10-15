@@ -1,0 +1,5 @@
+# Ignore virtual environment directories
+.venv/
+
+# Ignore Windows Installer Files for Needed Tools
+installers/
