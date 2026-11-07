@@ -2,4 +2,7 @@
 .venv/
 
 # Ignore Windows Installer Files for Needed Tools
-installers/
+*.msi
+*.exe
+*.yaml
+
