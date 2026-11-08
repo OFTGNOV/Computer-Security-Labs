@@ -3,7 +3,7 @@ from pathlib import Path
 import subprocess
 
 def main():
-    desktop_path = Path.home() / "Desktop" / "SandboxTestFile.txt"
+    desktop_path = Path.home() / "OneDrive" / "Desktop" / "SandboxTestFile.txt"
     try:
         with open(desktop_path, 'w') as f:
             f.write("This file was created inside the sandbox.")
