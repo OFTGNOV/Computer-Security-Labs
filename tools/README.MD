@@ -41,15 +41,18 @@ These utilities are executed on a Kali Linux virtual machine to simulate attacks
 
 | Tool | Lab | Primary Purpose | Installation / Invocation Command |
 | :--- | :---: | :--- | :--- |
-| **John the Ripper (`john`)** | Lab 2 | High-speed offline password cracking tool. Supports `--single` (seed-based), `--wordlist --rules` (dictionary mangling), and `--incremental` (brute-force) modes. | Pre-installed on Kali (`john`) |
+| **John the Ripper (`john`)** | Lab 2, 3 | High-speed offline password cracking tool. Supports `--single` (seed-based), `--wordlist --rules` (dictionary mangling), `--incremental` (brute-force), and `--format=raw-md5` (DVWA SQLi hash cracking). | Pre-installed on Kali (`john`) |
 | **`unshadow`** | Lab 2 | Combines Linux `/etc/passwd` and `/etc/shadow` into a unified format for John to crack. | Pre-installed with John the Ripper (`unshadow`) |
 | **`zip2john`** | Lab 2 | Extracts cryptographic hash metadata from password-protected ZIP archives (ZipCrypto and AES-256). | Pre-installed with John the Ripper (`zip2john`) |
 | **Impacket (`secretsdump`)** | Lab 2 | Extracts local user accounts and NTLM password hashes from offline Windows registry hives (`SAM` and `SYSTEM`). | `sudo apt install python3-impacket` |
-| **`rockyou.txt`** | Lab 2 | Standard wordlist of 14+ million leaked passwords used for dictionary attacks. | `gunzip /usr/share/wordlists/rockyou.txt.gz` |
+| **`rockyou.txt`** | Lab 2 | Standard wordlist of 14+ million leaked passwords used for dictionary attacks. | `sudo gzip -dk /usr/share/wordlists/rockyou.txt.gz` |
+| **Archive Utilities (`zip`, `7z`)** | Lab 2 | Creates legacy PKZIP 2.0 (`ZipCrypto`) and modern `AES-256` encrypted archives for cryptographic comparison. | `sudo apt install zip p7zip-full` (Kali) / `winget install 7zip.7zip` (Host) |
+| **OpenSSH (`ssh`, `sshd`, `scp`)** | Lab 2 | Enables encrypted SFTP/SCP file transfers of exported Windows registry hives and Linux shadow copies between VMs. | `sudo apt install openssh-server && sudo systemctl enable --now ssh` |
 | **Proxychains-NG (`proxychains4`)** | Lab 4 | Dynamic library hooking tool (`LD_PRELOAD`) that forces outgoing TCP connections of any binary through configured proxies. | `sudo apt install proxychains4` |
 | **Tor Service (`tor`)** | Lab 4 | Onion routing daemon providing a local SOCKS5 proxy on `127.0.0.1:9050` to route network traffic through multiple encrypted relays. | `sudo apt install tor` |
 | **Social Engineering Toolkit (`setoolkit`)** | Lab 5 | Framework for social engineering simulations. Used to clone target web pages and host a credential harvesting listener on port 80. | `sudo apt install set` |
-| **Recon Utilities** | Lab 4 | Network diagnostic and query tools (`whois`, `curl`, `nslookup`, `firefox-esr`, `lynx`, `w3m`) to verify IP spoofing and DNS routing. | `sudo apt install whois curl dnsutils lynx` |
+| **Firefox ESR & DevTools** | Lab 3, 4, 5 | Browser and HTTP inspector (`F12`) used to submit SQLi payloads, inspect URL-encoded `GET` parameters and session cookies (`security=low`), test DNS/IP leaks, and view cloned portals. | `sudo apt install -y firefox-esr` |
+| **Recon Utilities** | Lab 4 | Network diagnostic and query tools (`whois`, `curl`, `nslookup`, `lynx`, `w3m`) to verify IP spoofing and DNS routing. | `sudo apt install whois curl dnsutils lynx` |
 
 ---
 
@@ -57,8 +60,8 @@ These utilities are executed on a Kali Linux virtual machine to simulate attacks
 
 | Target / System | Lab | Role & Description | Access & Deployment |
 | :--- | :---: | :--- | :--- |
-| **VirtualBox / VMware** | Labs 2–5 | Type-2 Hypervisor managing isolated virtual machines and host-only subnets. | [virtualbox.org](https://www.virtualbox.org/) |
-| **Damn Vulnerable Web App (DVWA)** | Lab 3 | Vulnerable PHP/MySQL web application for hands-on SQL Injection (SQLi) exploitation and database enumeration. | Docker: `sudo docker run --rm -it -p 80:80 vulnerables/web-dvwa` or Metasploitable2 |
+| **VirtualBox / VMware** | Labs 2–5 | Type-2 Hypervisor managing isolated virtual machines and NAT/host-only subnets (`LabNet` `192.168.100.0/24`). | [virtualbox.org](https://www.virtualbox.org/) |
+| **Damn Vulnerable Web App (DVWA)** | Lab 3 | Vulnerable PHP + MariaDB/MySQL web application for hands-on SQL Injection (SQLi) exploitation, `information_schema` enumeration, and PDO remediation. | Kali native: `sudo apt install -y dvwa && sudo dvwa-start` (`:42001`), Ubuntu LAMP (`/var/www/html/dvwa`), or Docker (`vulnerables/web-dvwa`) |
 | **Windows 10 Target VM** | Lab 2, 5 | Local administrator target for offline SAM/SYSTEM registry export (`reg save`), and client victim browser for phishing simulations. | Microsoft developer evaluation VM |
-| **Ubuntu 22.04 LTS VM** | Lab 2 | Linux target machine for creating test accounts and exporting `/etc/passwd` and `/etc/shadow` files. | Ubuntu Server/Desktop ISO |
+| **Ubuntu 22.04 LTS VM** | Lab 2, 3 | Linux target machine for `/etc/passwd` & `/etc/shadow` extraction (Lab 2), and optional Apache2 + MariaDB + PHP host for DVWA at `/dvwa/` (Lab 3). | Ubuntu Server/Desktop ISO |
 | **WinSCP / SCP** | Lab 2 | SFTP/SCP file transfer client used to transfer exported registry hives and password shadow files from target VMs to Kali Linux. | [winscp.net](https://winscp.net/) |

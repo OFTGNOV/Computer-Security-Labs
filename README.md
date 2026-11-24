@@ -52,10 +52,10 @@ To complete all offensive and defensive labs, ensure the following VMs are prepa
 
 4. **Vulnerable Web App (DVWA)** (Used in Lab 3):
    
-   - Can run as a standalone VM (e.g. Metasploitable2 or Debian DVWA) or inside Docker on Kali:
+   - Can run natively on Kali via the official Kali package (`http://127.0.0.1:42001/`), on the Ubuntu 22.04 VM via Apache2 + MariaDB + PHP (`http://192.168.100.5/dvwa/`), or via Docker:
      
      ```bash
-     sudo docker run --rm -it -p 80:80 vulnerables/web-dvwa
+     sudo apt update && sudo apt install -y dvwa && sudo dvwa-start
      ```
 
 ### 3. Security Tools Catalog & Host Utilities
@@ -65,7 +65,6 @@ All tools and environment requirements are documented in the [Tools Directory Ca
 - `Sandboxie-Plus` (Process sandboxing)
 - `KeePass 2` (Encrypted password vault)
 - `VeraCrypt` (On-the-fly disk encryption)
-- `VeraCrypt_1.26.29_Machine_X64_wix_en-US.msi`
 
 ---
 
@@ -89,12 +88,12 @@ All tools and environment requirements are documented in the [Tools Directory Ca
 
 ### [Lab 3: SQL Injection (SQLi) with DVWA](file:///d:/Dev/Projects/Computer-Security-Labs/Labs/Lab3/README.md)
 
-- **Core Concept**: In-band UNION-based SQLi, database enumeration, password hash dumping.
-- **Execution**: Exploit DVWA (Security: Low) through 7 progressive payloads to enumerate DB version, user, `information_schema.tables`, and dump accounts/hashes from `users`.
-- **Required Deliverables**:
-  - Screenshots of each successful injection stage.
-  - Dumped credential tables and hashes.
-  - Secure remediation code (PDO parameterized queries).
+- **Core Concept**: In-band `UNION`-based SQLi, database fingerprinting, `information_schema` enumeration, credential hash exfiltration, and PDO parameterization.
+- **Execution**: Deploy DVWA on VirtualBox (Security: `Low`) and execute 7 progressive payloads to bypass `WHERE` logic (`%' or '0'='0`), fingerprint `version()` and `user()`, enumerate `information_schema.tables`, and dump `users` MD5 hashes via `concat(...,0x0a,...)`.
+- **Required Deliverables** (tracked in [`lab3_notes_template.md`](file:///d:/Dev/Projects/Computer-Security-Labs/Labs/Lab3/Deliverables/lab3_notes_template.md)):
+  - Screenshots of DVWA Security (`Low`) and each successful injection stage (Steps 1–7).
+  - Extracted `users` credential table and MD5 password hashes.
+  - Analysis report (`#` comments, `UNION` column/type rules) and refactored PHP PDO prepared statement code.
 
 ### [Lab 4: Using Proxychains for Anonymous Hacking](file:///d:/Dev/Projects/Computer-Security-Labs/Labs/Lab4/README.md)
 
