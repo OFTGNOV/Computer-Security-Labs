@@ -47,71 +47,27 @@
 
 | Tool / Component | Where It Runs | Purpose in Lab 3 | Setup / Verification |
 | :--- | :--- | :--- | :--- |
-| **Oracle VirtualBox** | Windows Host | Hosts your isolated Kali Linux and/or Ubuntu DVWA virtual machines on `LabNet`. | Installed at `C:\Program Files\Oracle\VirtualBox\` |
-| **DVWA (Web + PHP + MariaDB)** | Kali VM *(Option A)* or Ubuntu VM *(Option B)* | Vulnerable PHP/MySQL target hosting `/vulnerabilities/sqli/`. | `sudo apt install -y dvwa` *(Kali)* or LAMP + Git *(Ubuntu)* |
+| **Oracle VirtualBox** | Windows Host | Hosts your isolated Kali Linux virtual machine on `LabNet`. | Installed at `C:\Program Files\Oracle\VirtualBox\` |
+| **DVWA (Web + PHP + MariaDB)** | Kali Linux VM | Vulnerable PHP/MySQL target hosting `/vulnerabilities/sqli/` at `http://127.0.0.1:42001/`. | `sudo apt install -y dvwa && sudo dvwa-start` |
 | **Firefox ESR + DevTools (`F12`)** | Kali Linux VM | Submits SQLi payloads, inspects URL-encoded `GET` parameters (`?id=...`), and verifies session cookies (`security=low`). | Pre-installed on Kali (`firefox-esr`) |
 | **John the Ripper (`john`)** *(Bonus)* | Kali Linux VM | Cracks the 5 unsalted MD5 password hashes dumped in Step 7 using `rockyou.txt`. | Already configured in Lab 2 (`--format=raw-md5`) |
 
 ---
 
-### 3.3 Deploying DVWA on VirtualBox (Choose Option A or Option B)
+### 3.3 Deploying DVWA on Kali Linux (Single-VM Setup)
 
-You already have both `kali-linux-2026.3` (`192.168.100.3`) and `tamai-ubuserv-compsec-lab` (`192.168.100.5`) from Lab 2. Pick **one** of the two methods below:
-
-#### Option A (Recommended — Fastest, Uses Only 1 VM): Official Kali `dvwa` Package
-Kali Linux packages DVWA natively with a self-contained Nginx + PHP-FPM + MariaDB launcher. You only need to boot **Kali Linux** (2–3 GB RAM):
+Kali Linux packages DVWA natively with a self-contained Nginx + PHP-FPM + MariaDB launcher, so you only need to boot your **Kali Linux VM** (`kali-linux-2026.3-virtualbox-amd64`, 2–3 GB RAM) while leaving your Windows 10 and Ubuntu VMs powered off:
 
 ```bash
 # 1. Install the official Kali DVWA package and browser
 sudo apt update
 sudo apt install -y dvwa firefox-esr
 
-# 2. Launch DVWA (starts MariaDB, PHP-FPM, Nginx, and prints the local URL)
+# 2. Launch DVWA (starts MariaDB, PHP-FPM, Nginx, and opens http://127.0.0.1:42001/)
 sudo dvwa-start
 ```
 - **Target URL**: `http://127.0.0.1:42001/`
 - **Stop Command (when finished with the lab)**: `sudo dvwa-stop`
-
-#### Option B (2-VM Client/Server Setup Matching Handout `/dvwa/` URL): Host DVWA on Ubuntu 22.04 VM
-If you prefer true attacker-to-target network separation (`Kali 192.168.100.3` $\rightarrow$ `Ubuntu 192.168.100.5/dvwa/`, matching the handout's `http://<IP>/dvwa/` URL path), boot **`tamai-ubuserv-compsec-lab`** alongside **Kali** on `LabNet` and run the following on **Ubuntu 22.04**:
-
-```bash
-# 1. Install Apache2, MariaDB, PHP, and required extensions
-sudo apt update
-sudo apt install -y apache2 mariadb-server php php-mysqli php-gd php-xml php-mbstring libapache2-mod-php git
-
-# 2. Clone official DVWA into /var/www/html/dvwa
-sudo rm -rf /var/www/html/dvwa
-sudo git clone https://github.com/digininja/DVWA.git /var/www/html/dvwa
-
-# 3. Create config.inc.php and set default security level to 'low'
-sudo cp /var/www/html/dvwa/config/config.inc.php.dist /var/www/html/dvwa/config/config.inc.php
-sudo sed -i "s/'impossible'/'low'/g" /var/www/html/dvwa/config/config.inc.php
-
-# 4. Enable allow_url_include in Apache's php.ini so DVWA setup checks pass cleanly
-PHP_INI=$(find /etc/php -path "*/apache2/php.ini" | head -n 1)
-sudo sed -i 's/allow_url_include = Off/allow_url_include = On/g' "$PHP_INI"
-
-# 5. Grant web directory ownership to Apache (www-data)
-sudo chown -R www-data:www-data /var/www/html/dvwa
-sudo chmod -R 755 /var/www/html/dvwa
-
-# 6. Initialize MariaDB database and 'dvwa' user matching config.inc.php defaults
-sudo systemctl enable --now mariadb apache2
-sudo mysql -e "CREATE DATABASE IF NOT EXISTS dvwa;"
-sudo mysql -e "CREATE USER IF NOT EXISTS 'dvwa'@'127.0.0.1' IDENTIFIED BY 'p@ssw0rd';"
-sudo mysql -e "CREATE USER IF NOT EXISTS 'dvwa'@'localhost' IDENTIFIED BY 'p@ssw0rd';"
-sudo mysql -e "GRANT ALL PRIVILEGES ON dvwa.* TO 'dvwa'@'127.0.0.1';"
-sudo mysql -e "GRANT ALL PRIVILEGES ON dvwa.* TO 'dvwa'@'localhost';"
-sudo mysql -e "FLUSH PRIVILEGES;"
-sudo systemctl restart apache2
-
-# 7. Print Ubuntu's LabNet IP (e.g., 192.168.100.5)
-ip -br -4 addr
-```
-- **Target URL (from Kali Firefox)**: `http://<Ubuntu-IP>/dvwa/` (e.g., `http://192.168.100.5/dvwa/`)
-
-*(Alternative Option C — Docker inside Kali VM: `sudo apt install -y docker.io && sudo systemctl start docker && sudo docker run --rm -d --name dvwa -p 80:80 vulnerables/web-dvwa`, then browse to `http://127.0.0.1/`.)*
 
 ---
 
@@ -120,8 +76,8 @@ ip -br -4 addr
 Before running **any** SQLi payload, complete these four setup steps in Kali's **Firefox** browser:
 
 1. **Initialize the Database (`setup.php`)**:
-   - Open your DVWA URL (`http://127.0.0.1:42001/` or `http://<Ubuntu-IP>/dvwa/`).
-   - If redirected to `setup.php` (or click **Setup / Reset DB** in the left menu), scroll to the bottom and click **Create / Reset Database**.
+   - Open `http://127.0.0.1:42001/` (or `http://127.0.0.1:42001/setup.php`).
+   - Scroll to the bottom and click **Create / Reset Database**.
    - Wait for the confirmation message `"Database has been created."` and redirect to `login.php`.
 2. **Log In with Default Credentials**:
    - **Username**: `admin`
